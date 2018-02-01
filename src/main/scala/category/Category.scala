@@ -108,9 +108,11 @@ object Category {
 
   trait FreeMonad[F[_],A]
   case class Point[F[_],A](a: A) extends FreeMonad[F,A]
-  case class Join[F[_],A](s: F[FreeMonad[F,A]]) extends FreeMonad[F,A]
+  case class Suspend[F[_],A](s: F[A]) extends FreeMonad[F,A]
 
-
+  object FreeMonad {
+    def liftF[F[_], A](value: F[A]): FreeMonad[F,A] = Suspend(value)
+  }
 
   case class Extractor[A,B](e: A => B) {
     def map[C](f: B => C): Extractor[A,C] =
