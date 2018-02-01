@@ -1,6 +1,8 @@
 package category
 
-import category.Category.{Applicative, Functor, Box}
+import language.higherKinds
+
+import category.Category.{Applicative, Box, Functor, Monoid}
 
 object Implicits {
 
@@ -12,12 +14,12 @@ object Implicits {
       def `<$>`(fa: F[A]): F[B] = infixMap(fa)
     }
 
-    implicit val boxFunctor = new Functor[Box] {
+    implicit val boxFunctor: Functor[Box] = new Functor[Box] {
       override def map[A, B](fa: Box[A])
                             (f: (A) => B): Box[B] = Box(f(fa.value))
     }
 
-    implicit val optionFunctor = new Functor[Option] {
+    implicit val optionFunctor: Functor[Option] = new Functor[Option] {
       override def map[A, B](fa: Option[A])(f: (A) => B): Option[B] = fa.map(f)
     }
   }
@@ -31,7 +33,7 @@ object Implicits {
       def `<*>`(fa: F[A]): F[B] = infixApply(fa)
     }
 
-    implicit val boxApplicative = new Applicative[Box] {
+    implicit val boxApplicative: Applicative[Box] = new Applicative[Box] {
       override def apply[A, B](fa: Box[A])(f: Box[A => B]): Box[B] = Box(f.value(fa.value))
 
       override def pure[A](a: => A): Box[A] = Box(a)
@@ -39,7 +41,7 @@ object Implicits {
       override def map[A, B](fa: Box[A])(f: (A) => B): Box[B] = Box(f(fa.value))
     }
 
-    val optionApplicative = new Applicative[Option] {
+    val optionApplicative: Applicative[Option] = new Applicative[Option] {
       override def apply[A, B](fa: Option[A])(f: Option[A => B]): Option[B] = (fa,f) match {
         case (Some(s),Some(fs)) => Some(fs(s))
         case _ => None
@@ -48,6 +50,15 @@ object Implicits {
       override def pure[A](a: => A): Option[A] = Some(a)
 
       override def map[A, B](fa: Option[A])(f: (A) => B): Option[B] = fa.map(f)
+    }
+  }
+
+  object MonoidImplicits {
+
+    implicit def listMonoid[A] = new Monoid[List[A]] {
+      override def zero: List[A] = List.empty[A]
+
+      override def append(a1: List[A], a2: List[A]): List[A] = a1 ++ a2
     }
   }
 }

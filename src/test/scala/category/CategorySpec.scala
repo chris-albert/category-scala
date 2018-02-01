@@ -96,4 +96,70 @@ class CategorySpec extends WordSpec with Matchers {
       resultReader(3) shouldBe (9,5,"3")
     }
   }
+
+  "A WriterMonad" should {
+    import category.Implicits.MonoidImplicits._
+
+    "append output to result" in {
+      val writerFunction: Double => WriterMonad[Double, List[String]] =
+        (d) => WriterMonad(d + 10,List(s"Added 10 to $d"))
+
+      val result: WriterMonad[Double, List[String]] = for {
+        one <- writerFunction(3)
+        two <- writerFunction(4)
+      } yield one + two
+
+      result.value shouldBe 27
+      result.log shouldBe List(
+        "Added 10 to 3.0",
+        "Added 10 to 4.0"
+      )
+
+      result.map(_ + 4).value shouldBe 31
+
+      val writerFunction2: Double => WriterMonad[Double, List[String]] =
+        (d) => WriterMonad(d + 100, List(s"Added 100 to $d"))
+
+      val result2 = result.flatMap(writerFunction2)
+
+      result2.value shouldBe 127
+      result2.log shouldBe List(
+        "Added 10 to 3.0",
+        "Added 10 to 4.0",
+        "Added 100 to 27.0"
+      )
+    }
+  }
+
+  "Lens" should {
+
+    import category.Category.Lens._
+    case class Street(number: Int, name: String)
+    case class Address(city: String, street: Street)
+    case class Company(name: String, address: Address)
+    case class Employee(name: String, company: Company)
+
+    val company: Lens[Employee, Company] = Lens(_.company,(s,a) => s.copy(company = a))
+    val address: Lens[Company, Address] = Lens(_.address,(s,a) => s.copy(address = a))
+    val street: Lens[Address, Street] = Lens(_.street,(s,a) => s.copy(street = a))
+    val streetName: Lens[Street, String] = Lens(_.name,(s,a) => s.copy(name = a))
+
+    "be happy" in {
+//      composeLens(company, address)
+      false shouldBe false
+    }
+
+    "with maps" in {
+      //A = A
+      //S = Map[String, A]
+      def mapLens[B,A](b: B): Lens[Map[B, A], Option[A]] =
+        Lens(_.get(b),(s,a) => a.fold(s)(s.updated(b,_)))
+
+      val ml: Lens[Map[String, Double], Option[Double]] = mapLens[String, Double]("foo")
+      ml.get(Map("foo" -> 10)) shouldBe Some(10)
+      ml.get(Map("foob" -> 11)) shouldBe None
+
+//      val ol: Lens[Option[Double], String] = mapLens[]
+    }
+  }
 }

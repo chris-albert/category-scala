@@ -1,5 +1,6 @@
 package category
 
+import language.higherKinds
 
 object Category {
 
@@ -93,7 +94,7 @@ object Category {
   case class WriterMonad[A,B](value: A, log: B)(implicit m: Monoid[B]) {
     def map[C](f: A => C): WriterMonad[C,B] = WriterMonad(f(value),log)
     def flatMap[C](f: A => WriterMonad[C,B]): WriterMonad[C,B] = f(value) match {
-      case WriterMonad(v,l) => WriterMonad(v,m.append(l,log))
+      case WriterMonad(v,l) => WriterMonad(v,m.append(log,l))
     }
   }
 
@@ -108,5 +109,48 @@ object Category {
   trait FreeMonad[F[_],A]
   case class Point[F[_],A](a: A) extends FreeMonad[F,A]
   case class Join[F[_],A](s: F[FreeMonad[F,A]]) extends FreeMonad[F,A]
-  
+
+
+
+  case class Extractor[A,B](e: A => B) {
+    def map[C](f: B => C): Extractor[A,C] =
+      Extractor(a => f(e(a)))
+
+    def flatMap[C](f: B => Extractor[A,C]): Extractor[A,C] = ???
+  }
+
+  def foo[A,B,C,D,E](f: A => B, g: C => D, h: B => D => E): A => C => E =
+    a => c => h(f(a))(g(c))
+
+
+  trait Lens[S, A] {
+    def get(s: S): A
+
+    def set(s: S, a: A): S
+
+    def modify(s: S)(f: A => A): S =
+      set(s, f(get(s)))
+
+    def modifyOption(s: S)(f: A => Option[A]): Option[S] =
+      f(get(s)).map(a => set(s,a))
+
+    def modifyList(s: S)(f: A => List[A]): List[S] =
+      f(get(s)).map(a => set(s,a))
+
+    def modifyF[F[_]: Functor](s: S)(f: A => F[A]): F[S] =
+      implicitly[Functor[F]].map(f(get(s)))(a => set(s,a))
+  }
+
+  object Lens {
+
+    def apply[S, A](g: S => A,se: (S,A) => S): Lens[S, A] = new Lens[S, A] {
+      override def get(s: S): A = g(s)
+      override def set(s: S, a: A): S = se(s,a)
+    }
+
+    def composeLens[A,B,C](l: Lens[A,B], r: Lens[B,C]): Lens[A,C] = {
+
+      ???
+    }
+  }
 }
