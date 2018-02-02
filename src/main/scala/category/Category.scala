@@ -67,6 +67,10 @@ object Category {
   trait Monad[F[_]] extends Applicative[F] {
     def flatMap[A,B](fs: F[A])(f: A => F[B]): F[B] // In haskell this is bind or >>=
   }
+`
+  object Monad {
+    def apply[F[_]](implicit m: Monad[F]): Monad[F] = m
+  }
 
   trait Semigroup[A] {
     def append(a1: A, a2: A): A
@@ -108,7 +112,9 @@ object Category {
 
   trait FreeMonad[F[_],A]
   case class Point[F[_],A](a: A) extends FreeMonad[F,A]
+  case class Join[F[_], A](s: F[FreeMonad[F,A]]) extends FreeMonad[F,A]
   case class Suspend[F[_],A](s: F[A]) extends FreeMonad[F,A]
+
 
   object FreeMonad {
     def liftF[F[_], A](value: F[A]): FreeMonad[F,A] = Suspend(value)
