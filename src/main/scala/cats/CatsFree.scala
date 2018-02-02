@@ -53,6 +53,7 @@ object CatsFree {
 
   case class Extract[A](k: String, valuable: Valueable[A]) extends ExtractorA[A]
   case class ExtractOpt[A](k: String, valuable: Valueable[A]) extends ExtractorA[Option[A]]
+  case class ExtractA[A,B](k: String, valuable: Valueable[B], f: A => B) extends ExtractorA[B]
 
   type Extractor[A] = Free[ExtractorA, A]
 
@@ -62,12 +63,17 @@ object CatsFree {
   def extractOpt[A: Valueable](k: String): Extractor[Option[A]] =
     liftF[ExtractorA,Option[A]](ExtractOpt[A](k, implicitly[Valueable[A]]))
 
+  def extractA[A, B: Valueable](k: String,f: A => B): Extractor[B] =
+    liftF[ExtractorA,B](ExtractA[A,B](k, implicitly[Valueable[B]], f))
 
-  def compiler(m: Map[String, Value]): ExtractorA ~> Option =
+
+  def compute(m: Map[String, Value]): ExtractorA ~> Option =
     new (ExtractorA ~> Option) {
       override def apply[A](fa: ExtractorA[A]): Option[A] =
         fa match {
           case Extract(k,v) =>
+            m.get(k).flatMap(value => v.fromValue(value))
+          case ExtractA(k,v,_) =>
             m.get(k).flatMap(value => v.fromValue(value))
           case ExtractOpt(k,v) =>
             val a = m.get(k).flatMap(value => v.fromValue(value))
@@ -78,4 +84,20 @@ object CatsFree {
         }
     }
 
+  type ExtractFunction[A] = Function[A,Value]
+
+  val extractCompiler: ExtractorA ~> ExtractFunction =
+    new (ExtractorA ~> ExtractFunction) {
+      override def apply[A](fa: ExtractorA[A]): ExtractFunction[A] = {
+        fa match {
+          case Extract(k,v) =>
+            ???
+          case ExtractOpt(k,v) =>
+            ???
+          case ExtractA(k,v,f) =>
+
+            ???
+        }
+      }
+    }
 }
