@@ -67,7 +67,7 @@ object Category {
   trait Monad[F[_]] extends Applicative[F] {
     def flatMap[A,B](fs: F[A])(f: A => F[B]): F[B] // In haskell this is bind or >>=
   }
-`
+
   object Monad {
     def apply[F[_]](implicit m: Monad[F]): Monad[F] = m
   }
@@ -80,7 +80,7 @@ object Category {
     def zero: A
   }
 
-  type Id[+A] = A
+  type Id[A] = A
 
   /**
     * ReaderMonad

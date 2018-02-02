@@ -74,9 +74,19 @@ object Free {
     _ <- Free.lift(Tell(s"Hello, $x $y"))
   } yield ()
 
+  sealed trait FunctionK[F[_], G[_]]
+
+  //This is just an alias for FunctionK
   sealed trait ~>[F[_], G[_]] {
     def apply[A](f: F[A]): G[A]
   }
+
+//  object ~> {
+//    def apply[F[_],G[_],A](fg: F[A] => G[A]): F ~> G =
+//      new ~>[F, G] {
+//        override def apply(f: F[A]): G[A] = fg(f)
+//      }
+//  }
 
   object Console extends (Interact ~> Id) {
     override def apply[A](i: Interact[A]): Id[A] = i match {
@@ -100,17 +110,14 @@ object Free {
     } yield a + b + c.getOrElse(0d)
   }
 
-  case class Chain[A](k: String) {
-    def map[B](f: A => B): Chain[B] = ???
-    def flatMap[B](f: A => Chain[B]): Chain[B] = ???
-  }
-
-  def foo = {
-    val f = for {
-      a <- Chain[Double]("a")
-      b <- Chain[Double]("b")
-      c <- Chain[Option[Double]]("d")
-    } yield a + b + c.getOrElse(0d)
-  }
+//  def extractorCompiler(data: Map[String, Double]): ExtractorA ~> Id =
+//    new (ExtractorA ~> Id) {
+//      override def apply[A](f: ExtractorA[A]): Id[A] = {
+//        f match {
+//          case Extract(k) =>
+//            data(k)
+//        }
+//      }
+//    }
 
 }
