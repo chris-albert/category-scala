@@ -3,50 +3,19 @@ package cats
 import cats.free.Free
 import cats.free.Free.liftF
 
-object CatsFree {
+object Extracts {
 
-  sealed trait Value
-  case class DoubleVal(d: Double) extends Value
-  case class IntVal(i: Int) extends Value
-  case class StringVal(s: String) extends Value
+  case class User(name: String, age: Int)
+  case class House(number: Double)
 
-  trait Valueable[A] {
-    def toValue(a: A): Value
-    def fromValue(v: Value): Option[A]
-  }
+  trait Extractable[A]
+//  case class ExMap[A,B](m: Map[A,B]) extends Extractable[B]
+//  case class ExUser[A](u: User) extends Extractable[A]
+//  case class ExHouse[A](h: House) extends Extractable[A]
 
-  object Valueable {
-    def apply[A](
-      tv: A => Value,
-      fv: Value => Option[A]
-    ): Valueable[A] = new Valueable[A] {
-      override def toValue(a: A) = tv(a)
-      override def fromValue(v: Value) = fv(v)
-    }
-  }
-
-  object ValuableInstances {
-
-    implicit val doubleValuable = Valueable[Double](
-      DoubleVal, {
-        case DoubleVal(d) => Some(d)
-        case _ => None
-      }
-    )
-
-    implicit val intValuable = Valueable[Int](
-      IntVal, {
-        case IntVal(i) => Some(i)
-        case _ => None
-      }
-    )
-
-    implicit val stringValuable = Valueable[String](
-      StringVal, {
-        case StringVal(s) => Some(s)
-        case _ => None
-      }
-    )
+  object ExtractableInstances {
+    implicit val userExtractable = new Extractable[User] {}
+    implicit val houseExtractable = new Extractable[House] {}
   }
 
   sealed trait ExtractorA[A]
@@ -86,18 +55,18 @@ object CatsFree {
 
   type ExtractFunction[A] = Function[A,Value]
 
-  val extractCompiler: ExtractorA ~> ExtractFunction =
-    new (ExtractorA ~> ExtractFunction) {
-      override def apply[A](fa: ExtractorA[A]): ExtractFunction[A] = {
-        fa match {
-          case Extract(k,v) =>
-            ???
-          case ExtractOpt(k,v) =>
-            ???
-          case ExtractA(k,v,f) =>
-
-            ???
-        }
-      }
-    }
+//  val extractCompiler: ExtractorA ~> Reader =
+//    new (ExtractorA ~> Reader) {
+//      override def apply[A](fa: ExtractorA[A]): Reader[A] = {
+//        fa match {
+//          case Extract(k,v) =>
+//            ???
+//          case ExtractOpt(k,v) =>
+//            ???
+//          case ExtractA(k,v,f) =>
+//
+//            ???
+//        }
+//      }
+//    }
 }

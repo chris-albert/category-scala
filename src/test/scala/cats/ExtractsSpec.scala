@@ -2,10 +2,10 @@ package cats
 
 import org.scalatest.{Matchers, WordSpec}
 import cats.instances.option._
-import CatsFree._
-import cats.CatsFree.ValuableInstances._
+import Extracts._
+import cats.ValuableInstances._
 
-class CatsFreeSpec extends WordSpec with Matchers {
+class ExtractsSpec extends WordSpec with Matchers {
 
   "Extracts" should {
     def program =
@@ -15,7 +15,7 @@ class CatsFreeSpec extends WordSpec with Matchers {
         c <- extractOpt[Double]("c")
       } yield a + b + c.getOrElse(0d)
 
-    "get none if required dependecy doesn't exist" in {
+    "get none if required dependency doesn't exist" in {
       program.foldMap(compute(Map())) shouldBe None
     }
     "get value if all dependencies are met" in {
@@ -34,8 +34,8 @@ class CatsFreeSpec extends WordSpec with Matchers {
   }
 
   "Extracts from A" should {
-    case class User(name: String, age: Int)
-    case class House(number: Double)
+//    case class User(name: String, age: Int)
+//    case class House(number: Double)
     def program =
       for {
         a <- extractA[User,Int]("age",_.age)
