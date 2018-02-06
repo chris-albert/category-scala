@@ -1,8 +1,10 @@
 package io.lbert.free
 
+import cats.data.{Kleisli, Reader}
 import cats.free.Free
 import cats.free.Free.liftF
-import cats.~>
+import cats.{Applicative, Id, Monad, ~>}
+import language.higherKinds
 
 object Extracts {
 
@@ -11,36 +13,54 @@ object Extracts {
     def extract(a: A): V
   }
 
-  case class User(name: String, age: Int)
-  case class House(number: Double)
-
-  trait Extractable[A]
+//  case class User(name: String, age: Int)
+//  case class House(number: Double)
+//
+//  trait Extractable[A]
 //  case class ExMap[A,B](m: Map[A,B]) extends Extractable[B]
 //  case class ExUser[A](u: User) extends Extractable[A]
 //  case class ExHouse[A](h: House) extends Extractable[A]
 
-  object ExtractableInstances {
-    implicit val userExtractable = new Extractable[User] {}
-    implicit val houseExtractable = new Extractable[House] {}
+//  object ExtractableInstances {
+//    implicit val userExtractable = new Extractable[User] {}
+//    implicit val houseExtractable = new Extractable[House] {}
+//  }
+
+  type Key = String
+
+  trait Named {
+    def name: Key
   }
 
+  trait NamedExtractorK[M[_], A, B] extends Named {
+    def name: Key
+  }
+
+  case class NamedExtractor[A,B: Valueable](name: Key, f: A => B)
+    extends NamedExtractorK[Id, A, B]
+
+  case class NamedExtractorOpt[A,B: Valueable](name: Key, f: A => Option[B])
+    extends NamedExtractorK[Option, A, B]
+
+
   sealed trait ExtractorA[A]
-  type Key = String
 
   case class Extract[A](k: Key, valuable: Valueable[A]) extends ExtractorA[A]
   case class ExtractOpt[A](k: Key, valuable: Valueable[A]) extends ExtractorA[Option[A]]
-  case class ExtractA[A,B](k: Key, valuable: Valueable[B], f: A => B) extends ExtractorA[B]
 
   type Extractor[A] = Free[ExtractorA, A]
 
   def extract[A: Valueable](k: Key): Extractor[A] =
     liftF[ExtractorA,A](Extract[A](k,implicitly[Valueable[A]]))
 
+  def extract[A: Valueable](named: Named): Extractor[A] =
+    extract[A](named.name)
+
   def extractOpt[A: Valueable](k: Key): Extractor[Option[A]] =
     liftF[ExtractorA,Option[A]](ExtractOpt[A](k, implicitly[Valueable[A]]))
 
-  def extractA[A, B: Valueable](k: Key,f: A => B): Extractor[B] =
-    liftF[ExtractorA,B](ExtractA[A,B](k, implicitly[Valueable[B]], f))
+  def extractOpt[A: Valueable](named: Named): Extractor[Option[A]] =
+    extractOpt[A](named.name)
 
 
   def compute(m: Map[Key, Value]): ExtractorA ~> Option =
@@ -49,14 +69,29 @@ object Extracts {
         fa match {
           case Extract(k,v) =>
             m.get(k).flatMap(value => v.fromValue(value))
-          case ExtractA(k,v,_) =>
-            m.get(k).flatMap(value => v.fromValue(value))
           case ExtractOpt(k,v) =>
-            val a = m.get(k).flatMap(value => v.fromValue(value))
-            a match {
+            m.get(k).flatMap(value => v.fromValue(value)) match {
               case Some(d) => Some(Some(d))
               case _ => Some(None)
             }
+        }
+    }
+
+  type ExtractorReader[A] = Reader[Map[Key, Value], Option[A]]
+
+  val computeReader: ExtractorA ~> ExtractorReader =
+    new (ExtractorA ~> ExtractorReader) {
+      override def apply[A](fa: ExtractorA[A]): ExtractorReader[A] =
+        fa match {
+          case Extract(k,v) =>
+            Reader(m => m.get(k).flatMap(value => v.fromValue(value)))
+          case ExtractOpt(k,v) =>
+            Reader(m =>
+              m.get(k).flatMap(value => v.fromValue(value)) match {
+                case Some(d) => Some(Some(d))
+                case _ => Some(None)
+              }
+            )
         }
     }
 
