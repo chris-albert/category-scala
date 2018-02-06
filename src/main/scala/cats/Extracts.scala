@@ -5,6 +5,11 @@ import cats.free.Free.liftF
 
 object Extracts {
 
+  trait GenExtractor[K,V,A] {
+    def key: K
+    def extract(a: A): V
+  }
+
   case class User(name: String, age: Int)
   case class House(number: Double)
 
