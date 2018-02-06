@@ -1,4 +1,4 @@
-name := "category-scala"
+name := "io.lbert.category-scala"
 
 version := "1.0"
 

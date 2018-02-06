@@ -1,4 +1,4 @@
-package cats
+package io.lbert.free
 
 sealed trait Value
 case class DoubleVal(d: Double) extends Value

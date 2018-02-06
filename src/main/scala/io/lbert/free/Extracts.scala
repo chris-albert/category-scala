@@ -1,7 +1,8 @@
-package cats
+package io.lbert.free
 
 import cats.free.Free
 import cats.free.Free.liftF
+import cats.~>
 
 object Extracts {
 
@@ -24,24 +25,25 @@ object Extracts {
   }
 
   sealed trait ExtractorA[A]
+  type Key = String
 
-  case class Extract[A](k: String, valuable: Valueable[A]) extends ExtractorA[A]
-  case class ExtractOpt[A](k: String, valuable: Valueable[A]) extends ExtractorA[Option[A]]
-  case class ExtractA[A,B](k: String, valuable: Valueable[B], f: A => B) extends ExtractorA[B]
+  case class Extract[A](k: Key, valuable: Valueable[A]) extends ExtractorA[A]
+  case class ExtractOpt[A](k: Key, valuable: Valueable[A]) extends ExtractorA[Option[A]]
+  case class ExtractA[A,B](k: Key, valuable: Valueable[B], f: A => B) extends ExtractorA[B]
 
   type Extractor[A] = Free[ExtractorA, A]
 
-  def extract[A: Valueable](k: String): Extractor[A] =
+  def extract[A: Valueable](k: Key): Extractor[A] =
     liftF[ExtractorA,A](Extract[A](k,implicitly[Valueable[A]]))
 
-  def extractOpt[A: Valueable](k: String): Extractor[Option[A]] =
+  def extractOpt[A: Valueable](k: Key): Extractor[Option[A]] =
     liftF[ExtractorA,Option[A]](ExtractOpt[A](k, implicitly[Valueable[A]]))
 
-  def extractA[A, B: Valueable](k: String,f: A => B): Extractor[B] =
+  def extractA[A, B: Valueable](k: Key,f: A => B): Extractor[B] =
     liftF[ExtractorA,B](ExtractA[A,B](k, implicitly[Valueable[B]], f))
 
 
-  def compute(m: Map[String, Value]): ExtractorA ~> Option =
+  def compute(m: Map[Key, Value]): ExtractorA ~> Option =
     new (ExtractorA ~> Option) {
       override def apply[A](fa: ExtractorA[A]): Option[A] =
         fa match {

@@ -1,4 +1,4 @@
-package category
+package io.lbert.category
 
 import org.scalatest.{Matchers, WordSpec}
 import Category._
@@ -98,7 +98,7 @@ class CategorySpec extends WordSpec with Matchers {
   }
 
   "A WriterMonad" should {
-    import category.Implicits.MonoidImplicits._
+    import io.lbert.category.Implicits.MonoidImplicits._
 
     "append output to result" in {
       val writerFunction: Double => WriterMonad[Double, List[String]] =
@@ -133,7 +133,7 @@ class CategorySpec extends WordSpec with Matchers {
 
   "Lens" should {
 
-    import category.Category.Lens._
+    import io.lbert.category.Category.Lens._
     case class Street(number: Int, name: String)
     case class Address(city: String, street: Street)
     case class Company(name: String, address: Address)

@@ -1,6 +1,6 @@
-package category
+package io.lbert.category
 
-import category.Category.{FreeMonad, Id, Monad}
+import io.lbert.category.Category.{FreeMonad, Id, Monad}
 import language.higherKinds
 
 object Free {

@@ -1,9 +1,9 @@
-package cats
+package io.lbert.free
 
 import org.scalatest.{Matchers, WordSpec}
 import cats.instances.option._
 import Extracts._
-import cats.ValuableInstances._
+import io.lbert.free.ValuableInstances._
 
 class ExtractsSpec extends WordSpec with Matchers {
 

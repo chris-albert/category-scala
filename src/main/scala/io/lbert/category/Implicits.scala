@@ -1,8 +1,8 @@
-package category
+package io.lbert.category
 
 import language.higherKinds
 
-import category.Category.{Applicative, Box, Functor, Monoid}
+import io.lbert.category.Category.{Applicative, Box, Functor, Monoid}
 
 object Implicits {
 

@@ -1,4 +1,4 @@
-package category
+package io.lbert.category
 
 import language.higherKinds
 
