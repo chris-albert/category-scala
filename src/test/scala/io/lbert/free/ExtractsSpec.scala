@@ -2,6 +2,7 @@ package io.lbert.free
 
 import org.scalatest.{Matchers, WordSpec}
 import cats.instances.option._
+import cats.instances.map._
 //import cats.implicits._
 //import cats.data._
 import Extracts._
