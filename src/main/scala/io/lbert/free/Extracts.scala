@@ -8,24 +8,6 @@ import language.higherKinds
 
 object Extracts {
 
-  trait GenExtractor[K,V,A] {
-    def key: K
-    def extract(a: A): V
-  }
-
-//  case class User(name: String, age: Int)
-//  case class House(number: Double)
-//
-//  trait Extractable[A]
-//  case class ExMap[A,B](m: Map[A,B]) extends Extractable[B]
-//  case class ExUser[A](u: User) extends Extractable[A]
-//  case class ExHouse[A](h: House) extends Extractable[A]
-
-//  object ExtractableInstances {
-//    implicit val userExtractable = new Extractable[User] {}
-//    implicit val houseExtractable = new Extractable[House] {}
-//  }
-
   type Key = String
 
   trait Named {
@@ -41,7 +23,6 @@ object Extracts {
 
   case class NamedExtractorOpt[A,B: Valueable](name: Key, f: A => Option[B])
     extends NamedExtractorK[Option, A, B]
-
 
   sealed trait ExtractorA[A]
 
@@ -77,16 +58,16 @@ object Extracts {
         }
     }
 
-  type ExtractorReader[A] = Reader[Map[Key, Value], Option[A]]
+  type ExtractorKleisli[A] = Kleisli[Option, Map[Key, Value], A]
 
-  val computeReader: ExtractorA ~> ExtractorReader =
-    new (ExtractorA ~> ExtractorReader) {
-      override def apply[A](fa: ExtractorA[A]): ExtractorReader[A] =
+  val computeReader: ExtractorA ~> ExtractorKleisli =
+    new (ExtractorA ~> ExtractorKleisli) {
+      override def apply[A](fa: ExtractorA[A]): ExtractorKleisli[A] =
         fa match {
           case Extract(k,v) =>
-            Reader(m => m.get(k).flatMap(value => v.fromValue(value)))
+            Kleisli(m => m.get(k).flatMap(value => v.fromValue(value)))
           case ExtractOpt(k,v) =>
-            Reader(m =>
+            Kleisli(m =>
               m.get(k).flatMap(value => v.fromValue(value)) match {
                 case Some(d) => Some(Some(d))
                 case _ => Some(None)
@@ -94,21 +75,4 @@ object Extracts {
             )
         }
     }
-
-  type ExtractFunction[A] = Function[A,Value]
-
-//  val extractCompiler: ExtractorA ~> Reader =
-//    new (ExtractorA ~> Reader) {
-//      override def apply[A](fa: ExtractorA[A]): Reader[A] = {
-//        fa match {
-//          case Extract(k,v) =>
-//            ???
-//          case ExtractOpt(k,v) =>
-//            ???
-//          case ExtractA(k,v,f) =>
-//
-//            ???
-//        }
-//      }
-//    }
 }

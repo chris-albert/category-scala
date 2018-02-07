@@ -1,11 +1,10 @@
 package io.lbert.free
 
-import java.util.Date
 import org.scalatest.{Matchers, WordSpec}
 import cats.instances.option._
-import cats.data.Kleisli
+//import cats.implicits._
+//import cats.data._
 import Extracts._
-import cats.Id
 import io.lbert.free.ValuableInstances._
 
 class ExtractsSpec extends WordSpec with Matchers {
@@ -53,15 +52,13 @@ class ExtractsSpec extends WordSpec with Matchers {
       } yield a + b + h + d.map(_.length).getOrElse(1)
 
     "get value" in {
-      program.foldMap(compute(Map(
+
+      program.foldMap(computeReader).run(Map(
         "age" -> IntVal(10),
         "b" -> DoubleVal(11),
         "houseNum" -> DoubleVal(100)
-      ))) shouldBe Some(122d)
+      )) shouldBe Some(122d)
     }
 
-    "extract values" in {
-//      val a = program.foldMap(extractCompiler)
-    }
   }
 }
