@@ -8,6 +8,10 @@ resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
 
-libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.0"
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
-libraryDependencies += "org.typelevel" %% "cats" % "0.8.1"
+libraryDependencies ++= Seq(
+  "org.scalactic" %% "scalactic" % "3.0.0",
+  "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+  "org.typelevel" %% "cats" % "0.8.1",
+  "com.chuusai" %% "shapeless" % "2.3.3"
+)
+
