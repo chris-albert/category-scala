@@ -16,9 +16,9 @@ object Poop {
     def to(a: A): Value
   }
 
-  type Extractor[A,B: Keyable,C: Valueable] = A => Map[B,C]
+//  type Extractor[A, B: Keyable,C: Valueable] = A => Map[B,C]
 
-  type Mapper[B: Keyable,C: Valueable,D: Valueable] = Map[B,C] => Map[B,D]
+//  type Mapper[B: Keyable,C: Valueable,D: Valueable] = Map[B,C] => Map[B,D]
 
 
 }
