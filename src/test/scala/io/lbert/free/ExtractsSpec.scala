@@ -6,6 +6,7 @@ import cats.instances.map._
 //import cats.implicits._
 //import cats.data._
 import Extracts._
+
 import io.lbert.free.ValuableInstances._
 
 class ExtractsSpec extends WordSpec with Matchers {
